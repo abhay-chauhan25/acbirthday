@@ -917,26 +917,18 @@ function initGratitudeJar() {
     "For being the strongest person we know. 💪"
   ];
 
-  let currentSlip = null;
-
   jar.addEventListener('click', () => {
     // Pick a random reason
     const reason = reasons[Math.floor(Math.random() * reasons.length)];
     
     // Animate jar bounce
-    jar.style.transform = 'scale(0.9)';
+    jar.style.transform = 'scale(0.95)';
     setTimeout(() => {
       jar.style.transform = '';
     }, 150);
 
-    // If there's already a slip, fade it out first
-    if (currentSlip) {
-      const oldSlip = currentSlip;
-      oldSlip.classList.add('fade-out');
-      setTimeout(() => {
-        oldSlip.remove();
-      }, 400);
-    }
+    // Completely clear existing slips immediately
+    slipContainer.innerHTML = '';
 
     // Create new slip
     const slip = document.createElement('div');
@@ -948,7 +940,6 @@ function initGratitudeJar() {
     slip.style.setProperty('--rotate', rotate);
 
     slipContainer.appendChild(slip);
-    currentSlip = slip;
     
     // Add a tiny bit of confetti centered on the jar
     initMiniConfetti(jar.getBoundingClientRect());
