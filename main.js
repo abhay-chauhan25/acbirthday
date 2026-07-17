@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7.5 Alka Memory Game & Chai Guessing Game
   initAlkaMemoryGame();
   initChaiGuessingGame();
+  initGratitudeJar();
 
   // 8. Secret Nav Link to Memory Game
   const navLogo = document.querySelector('.nav-logo');
@@ -887,12 +888,135 @@ function showGoldenToast(msg) {
   toast.textContent = msg;
   document.body.appendChild(toast);
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => toast.classList.add('show'));
-  });
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
 
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 500);
   }, 3000);
+}
+
+/**
+ * Interactive Gratitude Jar
+ */
+function initGratitudeJar() {
+  const jar = document.getElementById('gratitude-jar');
+  const slipContainer = document.getElementById('paper-slip-container');
+  if (!jar || !slipContainer) return;
+
+  const reasons = [
+    "Your endless patience with us. ❤️",
+    "Your amazing cooking that brings us all together. 🥘",
+    "The way you always know exactly what to say. 💬",
+    "Your warm hugs that make everything better. 🤗",
+    "How you always put the family first. 👨‍👩‍👦‍👦",
+    "Your beautiful smile that lights up the room. ✨",
+    "The sacrifices you've made for our happiness. 🌟",
+    "For being the best listener in the world. 👂",
+    "Your contagious laugh. 😂",
+    "For being the strongest person we know. 💪"
+  ];
+
+  let currentSlip = null;
+
+  jar.addEventListener('click', () => {
+    // Pick a random reason
+    const reason = reasons[Math.floor(Math.random() * reasons.length)];
+    
+    // Animate jar bounce
+    jar.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+      jar.style.transform = '';
+    }, 150);
+
+    // If there's already a slip, fade it out first
+    if (currentSlip) {
+      const oldSlip = currentSlip;
+      oldSlip.classList.add('fade-out');
+      setTimeout(() => {
+        oldSlip.remove();
+      }, 400);
+    }
+
+    // Create new slip
+    const slip = document.createElement('div');
+    slip.className = 'paper-slip';
+    slip.textContent = reason;
+    
+    // Give it a random slight rotation between -4deg and 4deg
+    const rotate = (Math.random() * 8 - 4) + 'deg';
+    slip.style.setProperty('--rotate', rotate);
+
+    slipContainer.appendChild(slip);
+    currentSlip = slip;
+    
+    // Add a tiny bit of confetti centered on the jar
+    initMiniConfetti(jar.getBoundingClientRect());
+  });
+}
+
+function initMiniConfetti(rect) {
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.pointerEvents = 'none';
+  canvas.style.zIndex = '9999';
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let particles = [];
+  const colors = ['#fb7185', '#fda4af', '#fef08a'];
+
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top;
+
+  for (let i = 0; i < 15; i++) {
+    particles.push({
+      x: centerX,
+      y: centerY,
+      r: Math.random() * 4 + 2,
+      dx: Math.random() * 6 - 3,
+      dy: Math.random() * -8 - 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.floor(Math.random() * 10) - 10,
+      tiltAngle: 0,
+      tiltAngleInc: (Math.random() * 0.07) + 0.05
+    });
+  }
+
+  let startTime = Date.now();
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let allFinished = true;
+    
+    particles.forEach(p => {
+      p.tiltAngle += p.tiltAngleInc;
+      p.x += p.dx;
+      p.y += p.dy;
+      p.dy += 0.2; 
+      
+      if (p.y < canvas.height + 50) {
+        allFinished = false;
+        ctx.beginPath();
+        ctx.lineWidth = p.r;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+        ctx.stroke();
+      }
+    });
+
+    if (Date.now() - startTime < 2000 && !allFinished) { 
+       requestAnimationFrame(draw);
+    } else {
+       canvas.remove();
+    }
+  }
+  draw();
 }
