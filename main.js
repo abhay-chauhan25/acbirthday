@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7. Wordle Game
   initWordle();
 
+  // 7.5 Alka Memory Game & Chai Guessing Game
+  initAlkaMemoryGame();
+  initChaiGuessingGame();
+
   // 8. Secret Nav Link to Memory Game
   const navLogo = document.querySelector('.nav-logo');
   if (navLogo) {
@@ -529,6 +533,117 @@ function initWordle() {
     }, 1500);
   }
 }
+
+/**
+ * Memory Game Implementation for Alka's 49th Birthday
+ */
+function initAlkaMemoryGame() {
+  const grid = document.getElementById('memory-grid');
+  if (!grid) return;
+
+  const emojis = ['☕', '❤️', '🌸', '☕', '❤️', '🌸'];
+  // Shuffle array
+  emojis.sort(() => Math.random() - 0.5);
+
+  let flippedCards = [];
+  let matchedPairs = 0;
+
+  emojis.forEach((emoji, index) => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    card.dataset.emoji = emoji;
+    card.style.height = '80px';
+    card.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+    card.style.border = '2px solid rgba(251, 113, 133, 0.4)';
+    card.style.borderRadius = '8px';
+    card.style.display = 'flex';
+    card.style.justifyContent = 'center';
+    card.style.alignItems = 'center';
+    card.style.fontSize = '2.5rem';
+    card.style.cursor = 'pointer';
+    card.style.transition = 'transform 0.3s, background-color 0.3s';
+    
+    card.addEventListener('click', () => {
+      if (flippedCards.length < 2 && !card.classList.contains('flipped') && !card.classList.contains('matched')) {
+        card.textContent = emoji;
+        card.classList.add('flipped');
+        card.style.backgroundColor = 'rgba(251, 113, 133, 0.2)';
+        flippedCards.push(card);
+
+        if (flippedCards.length === 2) {
+          setTimeout(checkMatch, 800);
+        }
+      }
+    });
+
+    grid.appendChild(card);
+  });
+
+  function checkMatch() {
+    const [card1, card2] = flippedCards;
+    if (card1.dataset.emoji === card2.dataset.emoji) {
+      card1.classList.add('matched');
+      card2.classList.add('matched');
+      card1.style.backgroundColor = 'rgba(251, 113, 133, 0.5)';
+      card2.style.backgroundColor = 'rgba(251, 113, 133, 0.5)';
+      card1.style.borderColor = 'rgba(251, 113, 133, 0.8)';
+      card2.style.borderColor = 'rgba(251, 113, 133, 0.8)';
+      matchedPairs++;
+      
+      if (matchedPairs === 3) {
+        document.getElementById('memory-message').textContent = 'Perfect match! Unlocking letter...';
+        initConfetti();
+        setTimeout(() => {
+          document.getElementById('memory-container').style.display = 'none';
+          document.getElementById('memory-instructions').style.display = 'none';
+          const letter = document.getElementById('letter-content');
+          letter.style.display = 'block';
+          letter.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 1500);
+      }
+    } else {
+      card1.textContent = '';
+      card2.textContent = '';
+      card1.classList.remove('flipped');
+      card2.classList.remove('flipped');
+      card1.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+      card2.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+    }
+    flippedCards = [];
+  }
+}
+
+/**
+ * Chai Guessing Game Implementation
+ */
+function initChaiGuessingGame() {
+  const submitBtn = document.getElementById('chai-submit');
+  const guessInput = document.getElementById('chai-guess');
+  const messageEl = document.getElementById('chai-message');
+  
+  if (!submitBtn || !guessInput || !messageEl) return;
+  
+  submitBtn.addEventListener('click', () => {
+    const guess = parseInt(guessInput.value, 10);
+    if (isNaN(guess)) {
+      messageEl.textContent = 'Please enter a valid number!';
+      return;
+    }
+    
+    // Target is ~37,438. Accurate to 2 sig figs -> 37,000 range.
+    if (guess >= 36500 && guess <= 37499) {
+      messageEl.textContent = `Spot on! You've had roughly ${guess.toLocaleString()} cups of chai! ☕🎉`;
+      initConfetti();
+    } else if (guess < 36500) {
+      if (guess < 10000) messageEl.textContent = 'Way too low! Think bigger!';
+      else messageEl.textContent = 'Too low! Add some more cups to that number.';
+    } else {
+      if (guess > 100000) messageEl.textContent = 'Whoa, not quite that much! Too high.';
+      else messageEl.textContent = 'Too high! A bit less.';
+    }
+  });
+}
+
 
 /* ============================================
    EASTER EGG 11: SHAKE TO CELEBRATE
